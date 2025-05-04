@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" 
+           xmlns:tns="http://upb.edu.co/api/blinkdrive"
+           targetNamespace="http://upb.edu.co/api/blinkdrive" 
+           elementFormDefault="qualified">
+
+    <!-- Common Types -->
+    <xs:complexType name="FileMetadataType">
+        <xs:sequence>
+            <xs:element name="fileId" type="xs:int"/>
+            <xs:element name="fileName" type="xs:string"/>
+            <xs:element name="fileSize" type="xs:long"/>
+            <xs:element name="fileType" type="xs:string" minOccurs="0"/>
+            <xs:element name="directoryId" type="xs:int"/>
+            <xs:element name="ownerId" type="xs:int" minOccurs="0"/>
+            <xs:element name="creationDate" type="xs:dateTime" minOccurs="0"/>
+            <xs:element name="lastModifiedDate" type="xs:dateTime" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="FileStorageLocationType">
+        <xs:sequence>
+            <xs:element name="fileId" type="xs:string"/>
+            <xs:element name="nodeId" type="xs:int"/>
+            <xs:element name="filePath" type="xs:string"/>
+            <xs:element name="isPrimary" type="xs:boolean"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <!-- Upload File Operation -->
+    <xs:element name="UploadFileOperationRequest">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="fileName" type="xs:string"/>
+                <xs:element name="fileContent" type="xs:base64Binary"/>
+                <xs:element name="directoryId" type="xs:int"/>
+                <xs:element name="fileType" type="xs:string" minOccurs="0"/>
+                <xs:element name="userId" type="xs:int"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="UploadFileOperationResponse">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="success" type="xs:boolean"/>
+                <xs:element name="message" type="xs:string" minOccurs="0"/>
+                <xs:element name="fileId" type="xs:int"/>
+                <xs:element name="metadata" type="tns:FileMetadataType" minOccurs="0"/>
+                <xs:element name="storageLocations" type="tns:FileStorageLocationType" minOccurs="0" maxOccurs="unbounded"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <!-- Download File Operation -->
+    <xs:element name="DownloadFileOperationRequest">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="fileId" type="xs:int"/>
+                <xs:element name="userId" type="xs:int"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="DownloadFileOperationResponse">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="success" type="xs:boolean"/>
+                <xs:element name="message" type="xs:string" minOccurs="0"/>
+                <xs:element name="fileId" type="xs:int"/>
+                <xs:element name="fileName" type="xs:string" minOccurs="0"/>
+                <xs:element name="fileContent" type="xs:base64Binary" minOccurs="0"/>
+                <xs:element name="fileSize" type="xs:long" minOccurs="0"/>
+                <xs:element name="fileType" type="xs:string" minOccurs="0"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <!-- Delete File Operation -->
+    <xs:element name="DeleteFileOperationRequest">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="fileId" type="xs:int"/>
+                <xs:element name="userId" type="xs:int"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="DeleteFileOperationResponse">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="success" type="xs:boolean"/>
+                <xs:element name="message" type="xs:string" minOccurs="0"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+</xs:schema>

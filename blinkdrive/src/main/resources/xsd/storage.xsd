@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" 
+           xmlns:tns="http://upb.edu.co/api/storage"
+           targetNamespace="http://upb.edu.co/api/storage" 
+           elementFormDefault="qualified">
+
+    <!-- Common Types -->
+    <xs:complexType name="FileStorageNodeType">
+        <xs:sequence>
+            <xs:element name="nodeId" type="xs:int"/>
+            <xs:element name="nodeName" type="xs:string"/>
+            <xs:element name="ipAddress" type="xs:string"/>
+            <xs:element name="port" type="xs:int"/>
+            <xs:element name="status" type="xs:string"/>
+            <xs:element name="availableCapacityBytes" type="xs:long"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="FileStorageLocationType">
+        <xs:sequence>
+            <xs:element name="fileId" type="xs:string"/>
+            <xs:element name="nodeId" type="xs:int"/>
+            <xs:element name="filePath" type="xs:string"/>
+            <xs:element name="isPrimary" type="xs:boolean"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <!-- Upload File -->
+    <xs:element name="UploadFileRequest">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="fileId" type="xs:string" minOccurs="0"/>
+                <xs:element name="fileName" type="xs:string"/>
+                <xs:element name="fileContent" type="xs:base64Binary"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="UploadFileResponse">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="success" type="xs:boolean"/>
+                <xs:element name="message" type="xs:string" minOccurs="0"/>
+                <xs:element name="fileId" type="xs:string"/>
+                <xs:element name="storageLocations" type="tns:FileStorageLocationType" minOccurs="0" maxOccurs="unbounded"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <!-- Download File -->
+    <xs:element name="DownloadFileRequest">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="fileId" type="xs:string"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="DownloadFileResponse">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="success" type="xs:boolean"/>
+                <xs:element name="message" type="xs:string" minOccurs="0"/>
+                <xs:element name="fileId" type="xs:string"/>
+                <xs:element name="fileName" type="xs:string" minOccurs="0"/>
+                <xs:element name="fileContent" type="xs:base64Binary" minOccurs="0"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <!-- Delete File -->
+    <xs:element name="DeleteFileRequest">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="fileId" type="xs:string"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="DeleteFileResponse">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="success" type="xs:boolean"/>
+                <xs:element name="message" type="xs:string" minOccurs="0"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <!-- Get Node Status -->
+    <xs:element name="GetNodeStatusRequest">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="nodeId" type="xs:int" minOccurs="0"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="GetNodeStatusResponse">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="success" type="xs:boolean"/>
+                <xs:element name="message" type="xs:string" minOccurs="0"/>
+                <xs:element name="nodes" type="tns:FileStorageNodeType" minOccurs="0" maxOccurs="unbounded"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <!-- Check File Existence -->
+    <xs:element name="CheckFileExistenceRequest">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="fileId" type="xs:string"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="CheckFileExistenceResponse">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="exists" type="xs:boolean"/>
+                <xs:element name="locations" type="tns:FileStorageLocationType" minOccurs="0" maxOccurs="unbounded"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <!-- Replicate File -->
+    <xs:element name="ReplicateFileRequest">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="fileId" type="xs:string"/>
+                <xs:element name="sourceNodeId" type="xs:int"/>
+                <xs:element name="targetNodeId" type="xs:int"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="ReplicateFileResponse">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="success" type="xs:boolean"/>
+                <xs:element name="message" type="xs:string" minOccurs="0"/>
+                <xs:element name="newLocation" type="tns:FileStorageLocationType" minOccurs="0"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <!-- Health Check -->
+    <xs:element name="HealthCheckRequest">
+        <xs:complexType>
+            <xs:sequence/>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="HealthCheckResponse">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="status" type="xs:string"/>
+                <xs:element name="nodesUp" type="xs:int"/>
+                <xs:element name="nodesDown" type="xs:int"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+</xs:schema>

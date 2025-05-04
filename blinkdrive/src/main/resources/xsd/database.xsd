@@ -1,0 +1,423 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" 
+           xmlns:tns="http://upb.edu.co/api/db"
+           targetNamespace="http://upb.edu.co/api/db" 
+           elementFormDefault="qualified">
+
+    <!-- Common Types -->
+    <xs:complexType name="FileType">
+        <xs:sequence>
+            <xs:element name="fileId" type="xs:int" minOccurs="0"/>
+            <xs:element name="fileName" type="xs:string"/>
+            <xs:element name="fileSize" type="xs:long"/>
+            <xs:element name="fileType" type="xs:string" minOccurs="0"/>
+            <xs:element name="directoryId" type="xs:int"/>
+            <xs:element name="ownerId" type="xs:int"/>
+            <xs:element name="checksum" type="xs:string" minOccurs="0"/>
+            <xs:element name="creationDate" type="xs:dateTime" minOccurs="0"/>
+            <xs:element name="lastModifiedDate" type="xs:dateTime" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="DirectoryType">
+        <xs:sequence>
+            <xs:element name="directoryId" type="xs:int" minOccurs="0"/>
+            <xs:element name="directoryName" type="xs:string"/>
+            <xs:element name="parentDirectoryId" type="xs:int" minOccurs="0"/>
+            <xs:element name="ownerId" type="xs:int"/>
+            <xs:element name="creationDate" type="xs:dateTime" minOccurs="0"/>
+            <xs:element name="lastModifiedDate" type="xs:dateTime" minOccurs="0"/>
+            <xs:element name="sizeBytes" type="xs:long" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="StorageNodeType">
+        <xs:sequence>
+            <xs:element name="nodeId" type="xs:int" minOccurs="0"/>
+            <xs:element name="nodeName" type="xs:string"/>
+            <xs:element name="ipAddress" type="xs:string"/>
+            <xs:element name="port" type="xs:int"/>
+            <xs:element name="totalCapacityBytes" type="xs:long"/>
+            <xs:element name="availableCapacityBytes" type="xs:long"/>
+            <xs:element name="status" type="xs:string"/>
+            <xs:element name="lastHeartbeat" type="xs:dateTime" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+    
+    <xs:complexType name="FileStorageLocationType">
+        <xs:sequence>
+            <xs:element name="locationId" type="xs:int" minOccurs="0"/>
+            <xs:element name="fileId" type="xs:int"/>
+            <xs:element name="nodeId" type="xs:int"/>
+            <xs:element name="filePath" type="xs:string"/>
+            <xs:element name="isPrimary" type="xs:boolean"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="UserPermissionType">
+        <xs:sequence>
+            <xs:element name="userId" type="xs:int"/>
+            <xs:element name="permissionLevel" type="tns:PermissionLevelEnum" default="READ"/>
+            <xs:element name="expiryDate" type="xs:dateTime" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="DirectoryUserPermissionType">
+        <xs:complexContent>
+            <xs:extension base="tns:UserPermissionType">
+                <xs:sequence>
+                    <xs:element name="includeSubdirectories" type="xs:boolean" default="true"/>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:simpleType name="PermissionLevelEnum">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="READ"/>
+            <xs:enumeration value="WRITE"/>
+            <xs:enumeration value="FULL"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <!-- Directory Operations -->
+    <!-- Create Directory -->
+    <xs:element name="CreateDirectoryRequest">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="directoryName" type="xs:string"/>
+                <xs:element name="parentDirectoryId" type="xs:int" minOccurs="0"/>
+                <xs:element name="ownerId" type="xs:int"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    
+    <xs:element name="CreateDirectoryResponse">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="directory" type="tns:DirectoryType"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <!-- Get Directory -->
+    <xs:element name="GetDirectoryRequest">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="directoryId" type="xs:int"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    
+    <xs:element name="GetDirectoryResponse">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="directory" type="tns:DirectoryType"/>
+                <xs:element name="files" type="tns:FileType" minOccurs="0" maxOccurs="unbounded"/>
+                <xs:element name="subdirectories" type="tns:DirectoryType" minOccurs="0" maxOccurs="unbounded"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <!-- Get Directories By Parent -->
+    <xs:element name="GetDirectoriesByParentRequest">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="parentDirectoryId" type="xs:int"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    
+    <xs:element name="GetDirectoriesByParentResponse">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="directories" type="tns:DirectoryType" minOccurs="0" maxOccurs="unbounded"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <!-- Rename Directory -->
+    <xs:element name="RenameDirectoryRequest">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="directoryId" type="xs:int"/>
+                <xs:element name="newDirectoryName" type="xs:string"/>
+                <xs:element name="userId" type="xs:int"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    
+    <xs:element name="RenameDirectoryResponse">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="directory" type="tns:DirectoryType"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <!-- Move Directory -->
+    <xs:element name="MoveDirectoryRequest">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="directoryId" type="xs:int"/>
+                <xs:element name="newParentDirectoryId" type="xs:int"/>
+                <xs:element name="userId" type="xs:int"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    
+    <xs:element name="MoveDirectoryResponse">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="directory" type="tns:DirectoryType"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <!-- Delete Directory -->
+    <xs:element name="DeleteDirectoryRequest">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="directoryId" type="xs:int"/>
+                <xs:element name="userId" type="xs:int"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    
+    <xs:element name="DeleteDirectoryResponse">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="success" type="xs:boolean"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <!-- File Operations -->
+    <!-- Create File Metadata -->
+    <xs:element name="CreateFileMetadataRequest">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="fileName" type="xs:string"/>
+                <xs:element name="directoryId" type="xs:int"/>
+                <xs:element name="fileSize" type="xs:long"/>
+                <xs:element name="fileType" type="xs:string" minOccurs="0"/>
+                <xs:element name="ownerId" type="xs:int"/>
+                <xs:element name="checksum" type="xs:string" minOccurs="0"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    
+    <xs:element name="CreateFileMetadataResponse">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="file" type="tns:FileType"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <!-- Get File Metadata -->
+    <xs:element name="GetFileMetadataRequest">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="fileId" type="xs:int"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    
+    <xs:element name="GetFileMetadataResponse">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="file" type="tns:FileType"/>
+                <xs:element name="storageLocations" type="tns:FileStorageLocationType" minOccurs="0" maxOccurs="unbounded"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <!-- Get Files By Directory -->
+    <xs:element name="GetFilesByDirectoryRequest">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="directoryId" type="xs:int"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    
+    <xs:element name="GetFilesByDirectoryResponse">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="files" type="tns:FileType" minOccurs="0" maxOccurs="unbounded"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <!-- Rename File -->
+    <xs:element name="RenameFileRequest">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="fileId" type="xs:int"/>
+                <xs:element name="newFileName" type="xs:string"/>
+                <xs:element name="userId" type="xs:int"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    
+    <xs:element name="RenameFileResponse">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="file" type="tns:FileType"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <!-- Move File -->
+    <xs:element name="MoveFileRequest">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="fileId" type="xs:int"/>
+                <xs:element name="newDirectoryId" type="xs:int"/>
+                <xs:element name="userId" type="xs:int"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    
+    <xs:element name="MoveFileResponse">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="file" type="tns:FileType"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <!-- Delete File -->
+    <xs:element name="DeleteFileRequest">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="fileId" type="xs:int"/>
+                <xs:element name="userId" type="xs:int"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    
+    <xs:element name="DeleteFileResponse">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="success" type="xs:boolean"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <!-- Storage Location Operations -->
+    <xs:element name="AddFileStorageLocationRequest">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="fileId" type="xs:int"/>
+                <xs:element name="nodeId" type="xs:int"/>
+                <xs:element name="filePath" type="xs:string"/>
+                <xs:element name="isPrimary" type="xs:boolean"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    
+    <xs:element name="AddFileStorageLocationResponse">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="storageLocation" type="tns:FileStorageLocationType"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <!-- Sharing Operations -->
+    <!-- Share File -->
+    <xs:element name="ShareFileRequest">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="fileId" type="xs:int"/>
+                <xs:element name="sharedByUserId" type="xs:int"/>
+                <xs:element name="users" type="tns:UserPermissionType" maxOccurs="unbounded"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    
+    <xs:element name="ShareFileResponse">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="success" type="xs:boolean"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <!-- Share Directory -->
+    <xs:element name="ShareDirectoryRequest">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="directoryId" type="xs:int"/>
+                <xs:element name="sharedByUserId" type="xs:int"/>
+                <xs:element name="users" type="tns:DirectoryUserPermissionType" maxOccurs="unbounded"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    
+    <xs:element name="ShareDirectoryResponse">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="success" type="xs:boolean"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <!-- Storage Node Operations -->
+    <xs:element name="GetStorageNodesRequest">
+        <xs:complexType>
+            <xs:sequence/>
+        </xs:complexType>
+    </xs:element>
+    
+    <xs:element name="GetStorageNodesResponse">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="nodes" type="tns:StorageNodeType" minOccurs="0" maxOccurs="unbounded"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <!-- Storage Report -->
+    <xs:element name="GetStorageReportRequest">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="directoryId" type="xs:int" minOccurs="0"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    
+    <xs:element name="GetStorageReportResponse">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="totalStorageBytes" type="xs:long"/>
+                <xs:element name="usedStorageBytes" type="xs:long"/>
+                <xs:element name="usagePercentage" type="xs:double"/>
+                <xs:element name="directoryReport" type="tns:DirectoryReportType" minOccurs="0"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:complexType name="DirectoryReportType">
+        <xs:sequence>
+            <xs:element name="directoryId" type="xs:int"/>
+            <xs:element name="directoryName" type="xs:string"/>
+            <xs:element name="sizeBytes" type="xs:long"/>
+            <xs:element name="fileCount" type="xs:int"/>
+            <xs:element name="subdirectoryCount" type="xs:int"/>
+            <xs:element name="subdirectories" type="tns:DirectoryReportType" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="files" type="tns:FileReportType" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="FileReportType">
+        <xs:sequence>
+            <xs:element name="fileId" type="xs:int"/>
+            <xs:element name="fileName" type="xs:string"/>
+            <xs:element name="fileSize" type="xs:long"/>
+            <xs:element name="fileType" type="xs:string" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+</xs:schema>
