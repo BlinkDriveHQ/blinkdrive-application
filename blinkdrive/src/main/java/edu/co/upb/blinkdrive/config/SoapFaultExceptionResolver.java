@@ -13,14 +13,17 @@ import org.springframework.ws.soap.server.endpoint.SoapFaultMappingExceptionReso
 @Component
 public class SoapFaultExceptionResolver extends SoapFaultMappingExceptionResolver {
 
-    private static final QName ERROR_CODE = new QName("errorCode");
-    private static final QName ERROR_MESSAGE = new QName("errorMessage");
+    private static final QName ERROR_CODE = new QName("http://upb.edu.co/api/error", "errorCode");
+    private static final QName ERROR_MESSAGE = new QName("http://upb.edu.co/api/error", "errorMessage");
 
     public SoapFaultExceptionResolver() {
         Properties errorMappings = new Properties();
-        errorMappings.setProperty(JwtValidationInterceptor.AuthenticationException.class.getName(), "AUTH_FAILURE");
-        errorMappings.setProperty("edu.co.upb.blinkdrive.storage.exception.StorageException", "STORAGE_UNAVAILABLE");
-        errorMappings.setProperty("edu.co.upb.blinkdrive.db.client.DatabaseServiceException", "DATABASE_ERROR");
+        errorMappings.setProperty(JwtValidationInterceptor.AuthenticationException.class.getName(), 
+                SoapFaultDefinition.SERVER.toString());
+        errorMappings.setProperty("edu.co.upb.blinkdrive.storage.exception.StorageException", 
+                SoapFaultDefinition.SERVER.toString());
+        errorMappings.setProperty("edu.co.upb.blinkdrive.db.client.DatabaseServiceException", 
+                SoapFaultDefinition.SERVER.toString());
         setExceptionMappings(errorMappings);
         
         // Default fault is SERVER error

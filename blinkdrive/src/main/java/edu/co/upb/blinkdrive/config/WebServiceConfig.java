@@ -2,6 +2,7 @@ package edu.co.upb.blinkdrive.config;
 
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -11,6 +12,7 @@ import org.springframework.ws.config.annotation.EnableWs;
 import org.springframework.ws.config.annotation.WsConfigurerAdapter;
 import org.springframework.ws.server.EndpointInterceptor;
 import org.springframework.ws.server.endpoint.interceptor.PayloadLoggingInterceptor;
+import org.springframework.ws.soap.server.endpoint.interceptor.PayloadRootSmartSoapEndpointInterceptor;
 import org.springframework.ws.transport.http.MessageDispatcherServlet;
 import org.springframework.ws.wsdl.wsdl11.DefaultWsdl11Definition;
 import org.springframework.xml.xsd.SimpleXsdSchema;
@@ -20,6 +22,9 @@ import org.springframework.xml.xsd.XsdSchema;
 @Configuration
 public class WebServiceConfig extends WsConfigurerAdapter {
 
+    @Autowired
+    private JwtValidationInterceptor jwtValidationInterceptor;
+    
     @Bean
     public ServletRegistrationBean<MessageDispatcherServlet> messageDispatcherServlet(ApplicationContext applicationContext) {
         MessageDispatcherServlet servlet = new MessageDispatcherServlet();
@@ -79,10 +84,24 @@ public class WebServiceConfig extends WsConfigurerAdapter {
     
     @Override
     public void addInterceptors(List<EndpointInterceptor> interceptors) {
-    // Add logging interceptor in development
-    interceptors.add(new PayloadLoggingInterceptor());
-    
-    // Add JWT validation interceptor
-    // interceptors.add(new JwtValidationInterceptor());
-}
+        // Add logging interceptor for all endpoints
+        interceptors.add(new PayloadLoggingInterceptor());
+        
+        // Add JWT validation for database and storage endpoints only
+        // This interceptor will only apply to requests with specified namespaces
+        
+        // Database namespace
+        interceptors.add(new PayloadRootSmartSoapEndpointInterceptor(
+                jwtValidationInterceptor, 
+                "http://upb.edu.co/api/db", 
+                null));  // null means any local part in this namespace
+        
+        // Storage namespace
+        interceptors.add(new PayloadRootSmartSoapEndpointInterceptor(
+                jwtValidationInterceptor, 
+                "http://upb.edu.co/api/storage", 
+                null));  // null means any local part in this namespace
+        
+        // Notice we don't apply the interceptor to auth namespace operations
+    }
 }
