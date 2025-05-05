@@ -66,6 +66,17 @@ public class WebServiceConfig extends WsConfigurerAdapter {
         return wsdl11Definition;
     }
     
+    // BlinkDrive WSDL definition
+    @Bean(name = "blinkdrive")
+    public DefaultWsdl11Definition blinkdriveWsdl(XsdSchema blinkdriveSchema) {
+        DefaultWsdl11Definition wsdl11Definition = new DefaultWsdl11Definition();
+        wsdl11Definition.setPortTypeName("BlinkDrivePort");
+        wsdl11Definition.setLocationUri("/ws");
+        wsdl11Definition.setTargetNamespace("http://upb.edu.co/api/blinkdrive");
+        wsdl11Definition.setSchema(blinkdriveSchema);
+        return wsdl11Definition;
+    }
+    
     // XML Schemas
     @Bean
     public XsdSchema authenticationSchema() {
@@ -82,13 +93,17 @@ public class WebServiceConfig extends WsConfigurerAdapter {
         return new SimpleXsdSchema(new ClassPathResource("xsd/storage.xsd"));
     }
     
+    @Bean
+    public XsdSchema blinkdriveSchema() {
+        return new SimpleXsdSchema(new ClassPathResource("xsd/blinkdrive.xsd"));
+    }
+    
     @Override
     public void addInterceptors(List<EndpointInterceptor> interceptors) {
         // Add logging interceptor for all endpoints
         interceptors.add(new PayloadLoggingInterceptor());
         
-        // Add JWT validation for database and storage endpoints only
-        // This interceptor will only apply to requests with specified namespaces
+        // Add JWT validation for database, storage, and blinkdrive endpoints
         
         // Database namespace
         interceptors.add(new PayloadRootSmartSoapEndpointInterceptor(
@@ -100,6 +115,12 @@ public class WebServiceConfig extends WsConfigurerAdapter {
         interceptors.add(new PayloadRootSmartSoapEndpointInterceptor(
                 jwtValidationInterceptor, 
                 "http://upb.edu.co/api/storage", 
+                null));  // null means any local part in this namespace
+        
+        // BlinkDrive namespace - add JWT validation for file operations
+        interceptors.add(new PayloadRootSmartSoapEndpointInterceptor(
+                jwtValidationInterceptor, 
+                "http://upb.edu.co/api/blinkdrive", 
                 null));  // null means any local part in this namespace
         
         // Notice we don't apply the interceptor to auth namespace operations
